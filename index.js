@@ -14,9 +14,9 @@ app.get("/", async (req, res) => {
   });
 });
 
-const users = require("./routes/users");
+// const users = require("./routes/users");
 const branches = require("./routes/branches");
-app.use("/api/users", users);
+// app.use("/api/users", users);
 app.use("/api/branches", branches);
 
 // Start the server

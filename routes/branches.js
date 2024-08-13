@@ -9,19 +9,8 @@ router.get("/", async (req, res) => {
     const branches = await prisma.branches.findMany();
     res.json(branches);
   } catch (error) {
-    if (error instanceof PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        // Unique constraint violation
-        return res.status(409).json({ error: "User with this email already exists" });
-      } else {
-        // Handle other known errors
-        return res.status(500).json({ error: "An unexpected error occurred" });
-      }
-    } else {
-      // Handle unknown errors
-      console.error(error);
-      return res.status(500).json({ error: "Internal server error" });
-    }
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while fetching branches." });
   }
 });
 

@@ -13,7 +13,7 @@ app.get("/", async (req, res) => {
 });
 
 const userRoutes = require("./routes/userRoutes");
-app.use("/users", userRoutes);
+app.use("/api/users", userRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 3000;

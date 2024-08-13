@@ -16,11 +16,13 @@ app.get("/", async (req, res) => {
 
 const users = require("./routes/users");
 const branches = require("./routes/branches");
+const carBrands = require("./routes/car_brands");
 app.use("/api/users", users);
 app.use("/api/branches", branches);
+app.use("/api/car_brands", carBrands);
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

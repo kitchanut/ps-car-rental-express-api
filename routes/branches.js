@@ -60,10 +60,16 @@ router.put("/:id", async (req, res) => {
 // Delete a user
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
+  console.log(id);
   try {
-    await prisma.branches.delete({ where: { id: parseInt(id) } });
-    res.status(204).end();
+    await prisma.branches.delete({
+      where: {
+        id: Number(id),
+      },
+    });
+    res.status(200).end();
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while deleting the user." });
   }
 });

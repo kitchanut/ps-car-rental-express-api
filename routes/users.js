@@ -1,12 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  omit: {
+    users: {
+      password: true,
+    },
+  },
+});
 
 // Get all users
 router.get("/", async (req, res) => {
   try {
     const users = await prisma.users.findMany({
+      // select: {
+      //   id: true,
+      //   branch: true,
+      //   branch_id: true,
+      //   name: true,
+      //   email: true,
+      //   level: true,
+      //   status: true,
+      // },
       include: {
         branch: true,
       },
@@ -21,7 +36,9 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await prisma.users.findUnique({ where: { id: parseInt(id) } });
+    const user = await prisma.users.findUnique({
+      where: { id: parseInt(id) },
+    });
     if (user) {
       res.json(user);
     } else {

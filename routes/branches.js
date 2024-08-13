@@ -10,7 +10,8 @@ router.get("/", async (req, res) => {
     res.json(branches);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "An error occurred while fetching branches." });
+    res.json(error);
+    // res.status(500).json({ error: "An error occurred while fetching branches." });
   }
 });
 

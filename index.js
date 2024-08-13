@@ -14,8 +14,10 @@ app.get("/", async (req, res) => {
   });
 });
 
-const userRoutes = require("./routes/userRoutes");
-app.use("/api/users", userRoutes);
+const users = require("./routes/users");
+const branches = require("./routes/branches");
+app.use("/api/users", users);
+app.use("/api/branches", branches);
 
 // Start the server
 const PORT = process.env.PORT || 3000;

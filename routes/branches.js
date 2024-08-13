@@ -3,15 +3,13 @@ const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Get all users
+// Get all branches
 router.get("/", async (req, res) => {
   try {
-    const users = await prisma.users.findMany();
-    res.json(users);
+    const branches = await prisma.branches.findMany();
+    res.json(branches);
   } catch (error) {
-    res.json(error);
-    console.log(error);
-    res.status(500).json({ error: "An error occurred while fetching users." });
+    res.status(500).json({ error: "An error occurred while fetching branches." });
   }
 });
 
@@ -19,7 +17,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await prisma.users.findUnique({ where: { id: parseInt(id) } });
+    const user = await prisma.branches.findUnique({ where: { id: parseInt(id) } });
     if (user) {
       res.json(user);
     } else {
@@ -32,13 +30,10 @@ router.get("/:id", async (req, res) => {
 
 // Create a new user
 router.post("/", async (req, res) => {
-  const { name, email } = req.body;
+  const data = req.body;
   try {
-    const newUser = await prisma.users.create({
-      data: {
-        name,
-        email,
-      },
+    const newUser = await prisma.branches.create({
+      data: data,
     });
     res.status(201).json(newUser);
   } catch (error) {
@@ -49,11 +44,11 @@ router.post("/", async (req, res) => {
 // Update a user
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { name, email } = req.body;
+  const data = req.body;
   try {
-    const updatedUser = await prisma.users.update({
+    const updatedUser = await prisma.branches.update({
       where: { id: parseInt(id) },
-      data: { name, email },
+      data: data,
     });
     res.json(updatedUser);
   } catch (error) {
@@ -65,7 +60,7 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    await prisma.users.delete({ where: { id: parseInt(id) } });
+    await prisma.branches.delete({ where: { id: parseInt(id) } });
     res.status(204).end();
   } catch (error) {
     res.status(500).json({ error: "An error occurred while deleting the user." });

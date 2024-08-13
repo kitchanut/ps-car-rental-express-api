@@ -9,6 +9,7 @@ router.get("/", async (req, res) => {
     const branches = await prisma.branches.findMany();
     res.json(branches);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while fetching branches." });
   }
 });

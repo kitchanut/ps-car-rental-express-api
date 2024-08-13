@@ -13,6 +13,7 @@ model branches {
   branch_status String    @db.VarChar(255)
   created_at    DateTime? @db.Timestamp(0)
   updated_at    DateTime? @db.Timestamp(0)
+  users         users[]
 }
 
 model car_brands {
@@ -117,6 +118,7 @@ model sessions {
 
 model users {
   id                Int       @id @default(autoincrement())
+  branch            branches? @relation(fields: [branch_id], references: [id])
   branch_id         Int
   name              String    @db.VarChar(255)
   email             String    @unique(map: "users_email_unique") @db.VarChar(255)

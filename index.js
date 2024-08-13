@@ -5,6 +5,13 @@ const app = express();
 app.use(express.json());
 
 // Routes
+
+app.get("/", async (req, res) => {
+  res.json({
+    message: "Welcome to the Prisma Client REST API",
+  });
+});
+
 const userRoutes = require("./routes/userRoutes");
 app.use("/users", userRoutes);
 

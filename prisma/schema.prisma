@@ -8,7 +8,7 @@ datasource db {
 }
 
 model branches {
-  id            BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id            Int       @id @default(autoincrement()) @db.UnsignedInt
   branch_name   String    @db.VarChar(255)
   branch_status String    @db.VarChar(255)
   created_at    DateTime? @db.Timestamp(0)
@@ -16,7 +16,7 @@ model branches {
 }
 
 model car_brands {
-  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id               Int       @id @default(autoincrement()) @db.UnsignedInt
   car_brand_name   String    @db.VarChar(255)
   car_brand_status String    @db.VarChar(255)
   created_at       DateTime? @db.Timestamp(0)
@@ -24,8 +24,8 @@ model car_brands {
 }
 
 model car_models {
-  id               BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  car_brand_id     BigInt    @db.UnsignedBigInt
+  id               Int       @id @default(autoincrement())
+  car_brand_id     Int       @db.UnsignedInt
   car_model_name   String    @db.VarChar(255)
   car_model_status String    @db.VarChar(255)
   created_at       DateTime? @db.Timestamp(0)
@@ -33,8 +33,8 @@ model car_models {
 }
 
 model car_sub_models {
-  id                   BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  car_model_id         BigInt    @db.UnsignedBigInt
+  id                   Int       @id @default(autoincrement()) @db.UnsignedInt
+  car_model_id         Int       @db.UnsignedInt
   car_sub_model_name   String    @db.VarChar(255)
   car_sub_model_status String    @db.VarChar(255)
   created_at           DateTime? @db.Timestamp(0)
@@ -42,7 +42,7 @@ model car_sub_models {
 }
 
 model car_types {
-  id              BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id              Int       @id @default(autoincrement())
   car_type_name   String    @db.VarChar(255)
   car_type_status String    @db.VarChar(255)
   created_at      DateTime? @db.Timestamp(0)
@@ -50,12 +50,12 @@ model car_types {
 }
 
 model cars {
-  id                     BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
-  branch_id              BigInt    @db.UnsignedBigInt
-  car_type_id            BigInt    @db.UnsignedBigInt
-  car_brand_id           BigInt    @db.UnsignedBigInt
-  car_model_id           BigInt    @db.UnsignedBigInt
-  car_sub_model_id       BigInt?   @db.UnsignedBigInt
+  id                     Int       @id @default(autoincrement()) @db.UnsignedInt
+  branch_id              Int       @db.UnsignedInt
+  car_type_id            Int       @db.UnsignedInt
+  car_brand_id           Int       @db.UnsignedInt
+  car_model_id           Int       @db.UnsignedInt
+  car_sub_model_id       Int?      @db.UnsignedInt
   license_plate          String    @db.VarChar(255)
   license_plate_province String    @db.VarChar(255)
   year                   String    @db.VarChar(255)
@@ -68,7 +68,7 @@ model cars {
 }
 
 model customers {
-  id                             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id                             Int       @id @default(autoincrement()) @db.UnsignedInt
   customer_name                  String    @db.VarChar(255)
   customer_nickname              String?   @db.VarChar(255)
   customer_sex                   String    @db.VarChar(255)
@@ -85,13 +85,13 @@ model customers {
 model migrations {
   id        Int    @id @default(autoincrement()) @db.UnsignedInt
   migration String @db.VarChar(255)
-  batch     Int
+  batch     Int    @db.UnsignedInt
 }
 
 model personal_access_tokens {
-  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id             Int       @id @default(autoincrement())
   tokenable_type String    @db.VarChar(255)
-  tokenable_id   BigInt    @db.UnsignedBigInt
+  tokenable_id   Int       @db.UnsignedInt
   name           String    @db.VarChar(255)
   token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
   abilities      String?   @db.Text
@@ -105,7 +105,7 @@ model personal_access_tokens {
 
 model sessions {
   id            String  @id @db.VarChar(255)
-  user_id       BigInt? @db.UnsignedBigInt
+  user_id       Int?    @db.UnsignedInt
   ip_address    String? @db.VarChar(45)
   user_agent    String? @db.Text
   payload       String  @db.LongText
@@ -116,8 +116,8 @@ model sessions {
 }
 
 model users {
-  id                Int       @id @default(autoincrement())
-  branch_id         Int
+  id                Int       @id @default(autoincrement()) @db.UnsignedInt
+  branch_id         Int       @db.UnsignedInt
   name              String    @db.VarChar(255)
   email             String    @unique(map: "users_email_unique") @db.VarChar(255)
   email_verified_at DateTime? @db.Timestamp(0)

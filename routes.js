@@ -5,7 +5,6 @@ const router = express.Router();
 const authMiddleware = require("./middleware/authMiddleware");
 
 // Controllers
-// const authController = require("./controllers/auth-old");
 const authController = require("./controllers/auth");
 const branches = require("./controllers/branches");
 const carBrands = require("./controllers/car_brands");
@@ -18,10 +17,10 @@ router.use("/login", authController);
 
 // Authenticated routes
 // router.use("/branches", authMiddleware, branches);
-router.use("/branches", branches);
-router.use("/car_brands", carBrands);
-router.use("/car_models", carModels);
-router.use("/car_types", carTypes);
-router.use("/users", users);
+router.use("/branches", authMiddleware, branches);
+router.use("/car_brands", authMiddleware, carBrands);
+router.use("/car_models", authMiddleware, carModels);
+router.use("/car_types", authMiddleware, carTypes);
+router.use("/users", authMiddleware, users);
 
 module.exports = router;

@@ -9,7 +9,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // Login
-router.post("/", async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await prisma.users.findUnique({ where: { email: email } });
@@ -20,8 +20,14 @@ router.post("/", async (req, res) => {
     if (!validPassword) {
       return res.status(400).json({ message: "Invalid email or password." });
     }
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token });
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "24h" });
+
+    delete user.password;
+    const output = {
+      user: user,
+      token: token,
+    };
+    res.json(output);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "An error occurred while Login" });

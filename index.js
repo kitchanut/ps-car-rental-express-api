@@ -13,14 +13,6 @@ app.get("/", async (req, res) => {
   });
 });
 
-// const users = require("./routes/users");
-// const branches = require("./routes/branches");
-// const carBrands = require("./routes/car_brands");
-
-// app.use("/api/users", users);
-// app.use("/api/branches", branches);
-// app.use("/api/car_brands", carBrands);
-
 const routes = require("./routes");
 app.use("/api", routes);
 

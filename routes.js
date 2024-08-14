@@ -16,10 +16,11 @@ const users = require("./controllers/users");
 router.post("/login", authController.login);
 
 // Authenticated routes
-router.use("/branches", authMiddleware, branches);
-router.use("/car_brands", authMiddleware, carBrands);
-router.use("/car_models", authMiddleware, carModels);
-router.use("/car_types", authMiddleware, carTypes);
-router.use("/users", authMiddleware, users);
+// router.use("/branches", authMiddleware, branches);
+router.use("/branches", branches);
+router.use("/car_brands", carBrands);
+router.use("/car_models", carModels);
+router.use("/car_types", carTypes);
+router.use("/users", users);
 
 module.exports = router;

@@ -24,7 +24,7 @@ router.post("/", async (req, res) => {
     res.json({ token });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "An error occurred while fetching branches." });
+    res.status(500).json({ error: "An error occurred while Login" });
   }
 });
 

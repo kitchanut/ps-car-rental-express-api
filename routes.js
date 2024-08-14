@@ -5,6 +5,7 @@ const router = express.Router();
 const authMiddleware = require("./middleware/authMiddleware");
 
 // Controllers
+// const authController = require("./controllers/auth-old");
 const authController = require("./controllers/auth");
 const branches = require("./controllers/branches");
 const carBrands = require("./controllers/car_brands");
@@ -13,7 +14,7 @@ const carTypes = require("./controllers/car_types");
 const users = require("./controllers/users");
 
 // Login routes
-router.post("/login", authController.login);
+router.use("/login", authController);
 
 // Authenticated routes
 // router.use("/branches", authMiddleware, branches);

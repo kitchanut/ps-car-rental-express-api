@@ -1,16 +1,26 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
 const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  omit: {
+    users: {
+      password: true,
+    },
+  },
+});
 
-// Get all branches
+// Get all users
 router.get("/", async (req, res) => {
   try {
-    const branches = await prisma.branches.findMany();
-    res.json(branches);
+    const users = await prisma.users.findMany({
+      include: {
+        branch: true,
+      },
+    });
+    res.json(users);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "An error occurred while fetching branches." });
+    res.status(500).json({ error: "An error occurred while fetching users." });
   }
 });
 
@@ -18,7 +28,9 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await prisma.branches.findUnique({ where: { id: parseInt(id) } });
+    const user = await prisma.users.findUnique({
+      where: { id: parseInt(id) },
+    });
     if (user) {
       res.json(user);
     } else {
@@ -31,23 +43,32 @@ router.get("/:id", async (req, res) => {
 
 // Create a new user
 router.post("/", async (req, res) => {
-  const data = req.body;
-  try {
-    const newUser = await prisma.branches.create({
+  let data = req.body;
+  const user = await await prisma.users.findUnique({
+    where: {
+      email: data.email,
+    },
+  });
+  if (user) {
+    return res.status(422).json({ message: "User already exists" });
+  } else {
+    data.password = await bcrypt.hash(data.password, 10);
+    const new_users = await prisma.users.create({
       data: data,
     });
-    res.status(201).json(newUser);
-  } catch (error) {
-    res.status(500).json({ error: "An error occurred while creating the user." });
+    return res.status(201).json(new_users);
   }
 });
 
 // Update a user
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const data = req.body;
+  let data = req.body;
   try {
-    const updatedUser = await prisma.branches.update({
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+    const updatedUser = await prisma.users.update({
       where: { id: parseInt(id) },
       data: data,
     });
@@ -60,16 +81,10 @@ router.put("/:id", async (req, res) => {
 // Delete a user
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   try {
-    await prisma.branches.delete({
-      where: {
-        id: Number(id),
-      },
-    });
+    await prisma.users.delete({ where: { id: parseInt(id) } });
     res.status(200).end();
   } catch (error) {
-    console.log(error);
     res.status(500).json({ error: "An error occurred while deleting the user." });
   }
 });

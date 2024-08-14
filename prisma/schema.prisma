@@ -15,32 +15,40 @@ model branches {
   created_at    DateTime? @db.Timestamp(0)
   updated_at    DateTime? @db.Timestamp(0)
   users         users[]
+  cars          cars[]
 }
 
 model car_brands {
-  id               Int       @id @default(autoincrement())
-  car_brand_name   String    @db.VarChar(255)
-  car_brand_status String    @db.VarChar(255)
-  created_at       DateTime? @db.Timestamp(0)
-  updated_at       DateTime? @db.Timestamp(0)
+  id               Int          @id @default(autoincrement())
+  car_brand_name   String       @db.VarChar(255)
+  car_brand_status String       @db.VarChar(255)
+  created_at       DateTime?    @db.Timestamp(0)
+  updated_at       DateTime?    @db.Timestamp(0)
+  car_models       car_models[]
+  cars             cars[]
 }
 
 model car_models {
-  id               Int       @id @default(autoincrement())
+  id               Int              @id @default(autoincrement())
+  car_brands       car_brands       @relation(fields: [car_brand_id], references: [id])
   car_brand_id     Int
-  car_model_name   String    @db.VarChar(255)
-  car_model_status String    @db.VarChar(255)
-  created_at       DateTime? @db.Timestamp(0)
-  updated_at       DateTime? @db.Timestamp(0)
+  car_model_name   String           @db.VarChar(255)
+  car_model_status String           @db.VarChar(255)
+  created_at       DateTime?        @db.Timestamp(0)
+  updated_at       DateTime?        @db.Timestamp(0)
+  car_sub_models   car_sub_models[]
+  cars             cars[]
 }
 
 model car_sub_models {
-  id                   Int       @id @default(autoincrement())
+  id                   Int        @id @default(autoincrement())
+  car_models           car_models @relation(fields: [car_model_id], references: [id])
   car_model_id         Int
-  car_sub_model_name   String    @db.VarChar(255)
-  car_sub_model_status String    @db.VarChar(255)
-  created_at           DateTime? @db.Timestamp(0)
-  updated_at           DateTime? @db.Timestamp(0)
+  car_sub_model_name   String     @db.VarChar(255)
+  car_sub_model_status String     @db.VarChar(255)
+  created_at           DateTime?  @db.Timestamp(0)
+  updated_at           DateTime?  @db.Timestamp(0)
+  cars                 cars[]
 }
 
 model car_types {
@@ -49,24 +57,30 @@ model car_types {
   car_type_status String    @db.VarChar(255)
   created_at      DateTime? @db.Timestamp(0)
   updated_at      DateTime? @db.Timestamp(0)
+  cars            cars[]
 }
 
 model cars {
-  id                     Int       @id @default(autoincrement())
+  id                     Int             @id @default(autoincrement())
+  branch                 branches?       @relation(fields: [branch_id], references: [id])
   branch_id              Int
+  car_type               car_types       @relation(fields: [car_type_id], references: [id])
   car_type_id            Int
+  car_brand              car_brands      @relation(fields: [car_brand_id], references: [id])
   car_brand_id           Int
+  car_model              car_models      @relation(fields: [car_model_id], references: [id])
   car_model_id           Int
+  car_sub_model          car_sub_models? @relation(fields: [car_sub_model_id], references: [id])
   car_sub_model_id       Int?
-  license_plate          String    @db.VarChar(255)
-  license_plate_province String    @db.VarChar(255)
-  year                   String    @db.VarChar(255)
-  color                  String    @db.VarChar(255)
-  rental_per_day         String    @db.VarChar(255)
-  driver_per_day         String    @db.VarChar(255)
-  deposit                String    @db.VarChar(255)
-  created_at             DateTime? @db.Timestamp(0)
-  updated_at             DateTime? @db.Timestamp(0)
+  license_plate          String          @db.VarChar(255)
+  license_plate_province String          @db.VarChar(255)
+  year                   String          @db.VarChar(255)
+  color                  String          @db.VarChar(255)
+  rental_per_day         String          @db.VarChar(255)
+  driver_per_day         String          @db.VarChar(255)
+  deposit                String          @db.VarChar(255)
+  created_at             DateTime?       @db.Timestamp(0)
+  updated_at             DateTime?       @db.Timestamp(0)
 }
 
 model customers {

@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
     cb(null, "uploads/" + req.body.location);
   },
   filename: (req, file, cb) => {
-    cb(null, `${file.originalname}_${Date.now()}`);
+    cb(null, `${Date.now()}_${file.originalname}`);
   },
 });
 
@@ -28,7 +28,7 @@ router.post("/", upload.array("files", 10), async (req, res) => {
       order: index + 1,
       ref_id: parseInt(req.body.id),
       type: req.body.type,
-      file_name: file.filename,
+      file_name: file.originalname,
       file_path: file.path,
     }));
     const createdFiles = await prisma.uploads.createMany({
@@ -79,7 +79,7 @@ router.delete("/:id", async (req, res) => {
     fs.unlink(path.join(projectRoot, fileRecord.file_path), async (err) => {
       if (err) {
         console.log(err);
-        return res.status(500).json({ message: "Error deleting file from file system", error: err });
+        // return res.status(500).json({ message: "Error deleting file from file system", error: err });
       }
 
       // Delete the record from the database

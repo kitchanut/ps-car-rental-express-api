@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "prisma generate",
-    "migrate" : "prisma migrate dev"
+    "dev" : "prisma migrate dev",
+    "reset" : "prisma migrate reset",
+    "deploy" : "prisma migrate deploy",
+    "status" : "prisma migrate status"
   },
   "keywords": [],
   "author": "",

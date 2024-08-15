@@ -1,0 +1,98 @@
+const express = require("express");
+const router = express.Router();
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+// Prisma Client
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
+// Configure Multer for file storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/" + req.body.location);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${file.originalname}_${Date.now()}`);
+  },
+});
+
+const upload = multer({ storage: storage });
+
+router.post("/", upload.array("files", 10), async (req, res) => {
+  try {
+    const files = req.files;
+    const fileData = files.map((file, index) => ({
+      extension: path.extname(file.originalname),
+      order: index + 1,
+      ref_id: parseInt(req.body.id),
+      type: req.body.type,
+      file_name: file.filename,
+      file_path: file.path,
+    }));
+    const createdFiles = await prisma.uploads.createMany({
+      data: fileData,
+    });
+    res.status(200).json({
+      message: "Files uploaded successfully",
+      files: createdFiles,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while uploading the file." });
+  }
+});
+
+router.get("/", async (req, res) => {
+  // get parameter from query string
+  const { id, type } = req.query;
+  try {
+    const uploads = await prisma.uploads.findMany({
+      where: {
+        ref_id: parseInt(id),
+        type: type,
+      },
+    });
+    res.json(uploads);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while fetching uploads." });
+  }
+});
+
+router.delete("/:id", async (req, res) => {
+  const fileId = parseInt(req.params.id);
+
+  try {
+    // Find the file in the database
+    const fileRecord = await prisma.uploads.findUnique({
+      where: { id: fileId },
+    });
+
+    if (!fileRecord) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    // Delete the file from the file system
+    const projectRoot = path.resolve(__dirname, "..");
+    fs.unlink(path.join(projectRoot, fileRecord.file_path), async (err) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ message: "Error deleting file from file system", error: err });
+      }
+
+      // Delete the record from the database
+      await prisma.uploads.delete({
+        where: { id: fileId },
+      });
+
+      res.status(200).json({ message: "File deleted successfully" });
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error deleting file", error: error.message });
+  }
+});
+
+module.exports = router;

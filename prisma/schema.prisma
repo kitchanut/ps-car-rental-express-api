@@ -74,13 +74,15 @@ model cars {
   car_sub_model_id       Int?
   license_plate          String          @db.VarChar(255)
   license_plate_province String          @db.VarChar(255)
-  year                   String          @db.VarChar(255)
+  year                   Int
   color                  String          @db.VarChar(255)
-  rental_per_day         String          @db.VarChar(255)
-  driver_per_day         String          @db.VarChar(255)
-  deposit                String          @db.VarChar(255)
+  rental_per_day         Int
+  driver_per_day         Int
+  deposit                Int
+  car_status             String          @db.VarChar(255)
   created_at             DateTime?       @db.Timestamp(0)
   updated_at             DateTime?       @db.Timestamp(0)
+  uploads                uploads[]
 }
 
 model customers {
@@ -131,10 +133,22 @@ model sessions {
   @@index([user_id], map: "sessions_user_id_index")
 }
 
+model uploads {
+  id        Int      @id @default(autoincrement())
+  order     Int?
+  ref_id    Int
+  type      String
+  file_name String
+  extension String?
+  file_path String
+  createdAt DateTime @default(now())
+  car       cars     @relation(fields: [ref_id], references: [id])
+}
+
 model users {
   id                Int       @id @default(autoincrement())
   branch            branches? @relation(fields: [branch_id], references: [id])
-  branch_id         Int
+  branch_id         Int?
   name              String    @db.VarChar(255)
   email             String    @unique(map: "users_email_unique") @db.VarChar(255)
   email_verified_at DateTime? @db.Timestamp(0)

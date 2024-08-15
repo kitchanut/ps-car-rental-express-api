@@ -8,15 +8,17 @@ router.get("/", async (req, res) => {
   try {
     const cars = await prisma.cars.findMany({
       include: {
-        branches: true,
-        car_types: true,
-        car_brands: true,
-        car_models: true,
-        car_sub_models: true,
+        branch: true,
+        car_type: true,
+        car_brand: true,
+        car_model: true,
+        car_sub_model: true,
+        uploads: true,
       },
     });
     res.json(cars);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while fetching cars." });
   }
 });
@@ -45,6 +47,7 @@ router.post("/", async (req, res) => {
     });
     res.status(201).json(new_cars);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while creating the cars." });
   }
 });

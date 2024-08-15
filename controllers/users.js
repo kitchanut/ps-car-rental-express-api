@@ -44,19 +44,29 @@ router.get("/:id", async (req, res) => {
 // Create a new user
 router.post("/", async (req, res) => {
   let data = req.body;
-  const user = await await prisma.users.findUnique({
-    where: {
-      email: data.email,
-    },
-  });
-  if (user) {
-    return res.status(422).json({ message: "User already exists" });
-  } else {
+  // const user = await await prisma.users.findUnique({
+  //   where: {
+  //     email: data.email,
+  //   },
+  // });
+  // if (user) {
+  //   return res.status(422).json({ message: "User already exists" });
+  // } else {
+  //   data.password = await bcrypt.hash(data.password, 10);
+  //   const new_users = await prisma.users.create({
+  //     data: data,
+  //   });
+  //   return res.status(201).json(new_users);
+  // }
+  try {
     data.password = await bcrypt.hash(data.password, 10);
     const new_users = await prisma.users.create({
       data: data,
     });
     return res.status(201).json(new_users);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ error: "An error occurred while creating the user." });
   }
 });
 

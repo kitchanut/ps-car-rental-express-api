@@ -5,27 +5,31 @@ const router = express.Router();
 const authMiddleware = require("./middleware/authMiddleware");
 
 // Controllers
-const authController = require("./controllers/auth");
+const authController = require("./controllers/authController");
 const uploadController = require("./controllers/uploadController");
-const branches = require("./controllers/branches");
-const cars = require("./controllers/cars");
-const carBrands = require("./controllers/car_brands");
-const carModels = require("./controllers/car_models");
-const carSubModels = require("./controllers/car_sub_models");
-const carTypes = require("./controllers/car_types");
-const users = require("./controllers/users");
+const branchController = require("./controllers/branchController");
+const carController = require("./controllers/carController");
+const carBrandController = require("./controllers/carBrandController");
+const carModelController = require("./controllers/carModelController");
+const carSubModelController = require("./controllers/carSubModelController");
+const carTypeController = require("./controllers/carTypeController");
+const userController = require("./controllers/userController");
+const customerController = require("./controllers/customerController");
+const bookingController = require("./controllers/bookingController");
 
 // Login routes
 router.use("/auth", authController);
 router.use("/upload", uploadController);
 
 // Authenticated routes
-router.use("/branches", authMiddleware, branches);
-router.use("/cars", authMiddleware, cars);
-router.use("/car_brands", authMiddleware, carBrands);
-router.use("/car_models", authMiddleware, carModels);
-router.use("/car_sub_models", authMiddleware, carSubModels);
-router.use("/car_types", authMiddleware, carTypes);
-router.use("/users", authMiddleware, users);
+router.use("/branches", authMiddleware, branchController);
+router.use("/cars", authMiddleware, carController);
+router.use("/car_brands", authMiddleware, carBrandController);
+router.use("/car_models", authMiddleware, carModelController);
+router.use("/car_sub_models", authMiddleware, carSubModelController);
+router.use("/car_types", authMiddleware, carTypeController);
+router.use("/users", authMiddleware, userController);
+router.use("/customers", authMiddleware, customerController);
+router.use("/bookings", authMiddleware, bookingController);
 
 module.exports = router;

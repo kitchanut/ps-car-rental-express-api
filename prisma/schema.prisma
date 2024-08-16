@@ -8,12 +8,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model bookings {
+  id             Int       @id @default(autoincrement())
+  booking_number String    @db.VarChar(255)
+  customer       customers @relation(fields: [customer_id], references: [id])
+  customer_id    Int
+  car            cars      @relation(fields: [car_id], references: [id])
+  car_id         Int
+  pickup_date    DateTime  @default(now()) @db.Timestamp(0)
+  return_date    DateTime  @default(now()) @db.Timestamp(0)
+  rental_per_day Int
+  driver_per_day Int       @default(0)
+  extra_charge   Int
+  discount       Int
+  sub_total      Int
+  vat_percent    Int
+  vat_amount     Int
+  total          Int
+  deposit        Int
+  net_total      Int
+  booking_status String    @db.VarChar(255)
+  created_at     DateTime? @default(now()) @db.Timestamp(0)
+  updated_at     DateTime? @default(now()) @updatedAt @db.Timestamp(0)
+}
+
 model branches {
   id            Int       @id @default(autoincrement())
   branch_name   String    @db.VarChar(255)
   branch_status String    @db.VarChar(255)
-  created_at    DateTime? @db.Timestamp(0)
-  updated_at    DateTime? @db.Timestamp(0)
+  branch_color  String?   @db.VarChar(255)
+  created_at    DateTime? @default(now())
+  updated_at    DateTime? @default(now()) @updatedAt
   users         users[]
   cars          cars[]
 }
@@ -22,8 +47,8 @@ model car_brands {
   id               Int          @id @default(autoincrement())
   car_brand_name   String       @db.VarChar(255)
   car_brand_status String       @db.VarChar(255)
-  created_at       DateTime?    @db.Timestamp(0)
-  updated_at       DateTime?    @db.Timestamp(0)
+  created_at       DateTime?    @default(now()) @db.Timestamp(0)
+  updated_at       DateTime?    @default(now()) @updatedAt @db.Timestamp(0)
   car_models       car_models[]
   cars             cars[]
 }
@@ -46,8 +71,8 @@ model car_sub_models {
   car_model_id         Int
   car_sub_model_name   String     @db.VarChar(255)
   car_sub_model_status String     @db.VarChar(255)
-  created_at           DateTime?  @db.Timestamp(0)
-  updated_at           DateTime?  @db.Timestamp(0)
+  created_at           DateTime?  @default(now()) @db.Timestamp(0)
+  updated_at           DateTime?  @default(now()) @updatedAt @db.Timestamp(0)
   cars                 cars[]
 }
 
@@ -55,8 +80,8 @@ model car_types {
   id              Int       @id @default(autoincrement())
   car_type_name   String    @db.VarChar(255)
   car_type_status String    @db.VarChar(255)
-  created_at      DateTime? @db.Timestamp(0)
-  updated_at      DateTime? @db.Timestamp(0)
+  created_at      DateTime? @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @default(now()) @updatedAt @db.Timestamp(0)
   cars            cars[]
 }
 
@@ -76,28 +101,33 @@ model cars {
   license_plate_province String          @db.VarChar(255)
   year                   Int
   color                  String          @db.VarChar(255)
+  color_code             String?         @db.VarChar(255)
   rental_per_day         Int
   driver_per_day         Int
   deposit                Int
   car_status             String          @db.VarChar(255)
-  created_at             DateTime?       @db.Timestamp(0)
-  updated_at             DateTime?       @db.Timestamp(0)
+  created_at             DateTime?       @default(now()) @db.Timestamp(0)
+  updated_at             DateTime?       @default(now()) @updatedAt @db.Timestamp(0)
   uploads                uploads[]
+  bookings               bookings[]
 }
 
 model customers {
-  id                             Int       @id @default(autoincrement())
-  customer_name                  String    @db.VarChar(255)
-  customer_nickname              String?   @db.VarChar(255)
-  customer_sex                   String    @db.VarChar(255)
-  customer_tel                   String    @db.VarChar(255)
-  customer_tel_backup            String?   @db.VarChar(255)
-  customer_citizen_id            String?   @db.VarChar(255)
-  customer_citizen_expiry        String?   @db.VarChar(255)
-  customer_driver_license        String?   @db.VarChar(255)
-  customer_driver_license_expiry String?   @db.VarChar(255)
-  created_at                     DateTime? @db.Timestamp(0)
-  updated_at                     DateTime? @db.Timestamp(0)
+  id                             Int        @id @default(autoincrement())
+  customer_name                  String     @db.VarChar(255)
+  customer_nickname              String?    @db.VarChar(255)
+  customer_sex                   String?    @db.VarChar(255)
+  customer_tel                   String?    @db.VarChar(255)
+  customer_tel_backup            String?    @db.VarChar(255)
+  customer_citizen_id            String?    @db.VarChar(255)
+  customer_citizen_expiry        String?    @db.VarChar(255)
+  customer_driver_license        String?    @db.VarChar(255)
+  customer_driver_license_expiry String?    @db.VarChar(255)
+  customer_image                 String?    @db.VarChar(255)
+  customer_status                String?    @db.VarChar(255)
+  created_at                     DateTime?  @default(now()) @db.Timestamp(0)
+  updated_at                     DateTime?  @default(now()) @updatedAt @db.Timestamp(0)
+  bookings                       bookings[]
 }
 
 model migrations {
@@ -115,8 +145,8 @@ model personal_access_tokens {
   abilities      String?   @db.Text
   last_used_at   DateTime? @db.Timestamp(0)
   expires_at     DateTime? @db.Timestamp(0)
-  created_at     DateTime? @db.Timestamp(0)
-  updated_at     DateTime? @db.Timestamp(0)
+  created_at     DateTime? @default(now()) @db.Timestamp(0)
+  updated_at     DateTime? @default(now()) @updatedAt @db.Timestamp(0)
 
   @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
 }
@@ -141,7 +171,7 @@ model uploads {
   file_name String
   extension String?
   file_path String
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @db.Timestamp(0)
   car       cars     @relation(fields: [ref_id], references: [id])
 }
 
@@ -156,6 +186,6 @@ model users {
   password          String    @db.VarChar(255)
   status            String    @db.VarChar(255)
   remember_token    String?   @db.VarChar(100)
-  created_at        DateTime? @db.Timestamp(0)
-  updated_at        DateTime? @db.Timestamp(0)
+  created_at        DateTime? @default(now()) @db.Timestamp(0)
+  updated_at        DateTime? @default(now()) @updatedAt @db.Timestamp(0)
 }

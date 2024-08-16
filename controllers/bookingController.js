@@ -25,7 +25,12 @@ function generateBookingNumber() {
 // Get all bookings
 router.get("/", async (req, res) => {
   try {
-    const bookings = await prisma.bookings.findMany();
+    const bookings = await prisma.bookings.findMany({
+      include: {
+        customer: true,
+        car: true,
+      },
+    });
     res.json(bookings);
   } catch (error) {
     res.status(500).json({ error: "An error occurred while fetching bookings." });
@@ -68,7 +73,9 @@ router.post("/", async (req, res) => {
 // Update a bookings
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const data = req.body;
+  let data = req.body;
+  data.pickup_date = new Date(data.pickup_date).toISOString();
+  data.return_date = new Date(data.return_date).toISOString();
   try {
     const updated_bookings = await prisma.bookings.update({
       where: { id: parseInt(id) },
@@ -76,6 +83,7 @@ router.put("/:id", async (req, res) => {
     });
     res.json(updated_bookings);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while updating the bookings." });
   }
 });

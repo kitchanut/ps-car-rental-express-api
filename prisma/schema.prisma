@@ -9,38 +9,51 @@ datasource db {
 }
 
 model bookings {
-  id             Int       @id @default(autoincrement())
-  booking_number String    @db.VarChar(255)
-  customer       customers @relation(fields: [customer_id], references: [id])
-  customer_id    Int
-  car            cars      @relation(fields: [car_id], references: [id])
-  car_id         Int
-  pickup_date    DateTime  @default(now()) @db.Timestamp(0)
-  return_date    DateTime  @default(now()) @db.Timestamp(0)
-  rental_per_day Int
-  driver_per_day Int       @default(0)
-  extra_charge   Int
-  discount       Int
-  sub_total      Int
-  vat_percent    Int
-  vat_amount     Int
-  total          Int
-  deposit        Int
-  net_total      Int
-  booking_status String    @db.VarChar(255)
-  created_at     DateTime? @default(now()) @db.Timestamp(0)
-  updated_at     DateTime? @default(now()) @updatedAt @db.Timestamp(0)
+  id                   Int                    @id @default(autoincrement())
+  booking_number       String                 @db.VarChar(255)
+  customer             customers              @relation(fields: [customer_id], references: [id])
+  customer_id          Int
+  car                  cars                   @relation(fields: [car_id], references: [id])
+  car_id               Int
+  pickup_date          DateTime               @default(now()) @db.Timestamp(0)
+  pickup_location      String                 @db.VarChar(255)
+  pickup_branch_id     Int
+  pickup_branch        branches               @relation("pickup_branch", fields: [pickup_branch_id], references: [id])
+  return_date          DateTime               @default(now()) @db.Timestamp(0)
+  return_location      String                 @db.VarChar(255)
+  return_branch_id     Int
+  return_branch        branches               @relation("return_branch", fields: [return_branch_id], references: [id])
+  rental_per_day       Int
+  rental               Int
+  required_driver      Boolean                @default(false)
+  driver_per_day       Int                    @default(0)
+  extra_charge         Int
+  discount             Int
+  sub_total            Int
+  vat_percent          Int
+  vat_amount           Int
+  total                Int
+  deposit              Int
+  net_total            Int
+  booking_note         String?                @db.Text
+  booking_status       String                 @db.VarChar(255)
+  created_at           DateTime?              @default(now()) @db.Timestamp(0)
+  updated_at           DateTime?              @default(now()) @updatedAt @db.Timestamp(0)
+  account_transactions account_transactions[]
+  uploads              uploads[]
 }
 
 model branches {
-  id            Int       @id @default(autoincrement())
-  branch_name   String    @db.VarChar(255)
-  branch_status String    @db.VarChar(255)
-  branch_color  String?   @db.VarChar(255)
-  created_at    DateTime? @default(now())
-  updated_at    DateTime? @default(now()) @updatedAt
+  id            Int        @id @default(autoincrement())
+  branch_name   String     @db.VarChar(255)
+  branch_status String     @db.VarChar(255)
+  branch_color  String?    @db.VarChar(255)
+  created_at    DateTime?  @default(now())
+  updated_at    DateTime?  @default(now()) @updatedAt
   users         users[]
   cars          cars[]
+  pickup_branch bookings[] @relation("pickup_branch")
+  return_branch bookings[] @relation("return_branch")
 }
 
 model car_brands {
@@ -86,30 +99,34 @@ model car_types {
 }
 
 model cars {
-  id                     Int             @id @default(autoincrement())
-  branch                 branches?       @relation(fields: [branch_id], references: [id])
+  id                     Int                    @id @default(autoincrement())
+  branch                 branches?              @relation(fields: [branch_id], references: [id])
   branch_id              Int
-  car_type               car_types       @relation(fields: [car_type_id], references: [id])
+  car_type               car_types              @relation(fields: [car_type_id], references: [id])
   car_type_id            Int
-  car_brand              car_brands      @relation(fields: [car_brand_id], references: [id])
+  car_brand              car_brands             @relation(fields: [car_brand_id], references: [id])
   car_brand_id           Int
-  car_model              car_models      @relation(fields: [car_model_id], references: [id])
+  car_model              car_models             @relation(fields: [car_model_id], references: [id])
   car_model_id           Int
-  car_sub_model          car_sub_models? @relation(fields: [car_sub_model_id], references: [id])
+  car_sub_model          car_sub_models?        @relation(fields: [car_sub_model_id], references: [id])
   car_sub_model_id       Int?
-  license_plate          String          @db.VarChar(255)
-  license_plate_province String          @db.VarChar(255)
+  license_plate          String                 @db.VarChar(255)
+  license_plate_province String                 @db.VarChar(255)
   year                   Int
-  color                  String          @db.VarChar(255)
-  color_code             String?         @db.VarChar(255)
+  color                  String                 @db.VarChar(255)
+  color_code             String?                @db.VarChar(255)
   rental_per_day         Int
   driver_per_day         Int
   deposit                Int
-  car_status             String          @db.VarChar(255)
-  created_at             DateTime?       @default(now()) @db.Timestamp(0)
-  updated_at             DateTime?       @default(now()) @updatedAt @db.Timestamp(0)
+  excess_houre_free      Int
+  excess_houre_charge    Int
+  excess_price           Int
+  car_status             String                 @db.VarChar(255)
+  created_at             DateTime?              @default(now()) @db.Timestamp(0)
+  updated_at             DateTime?              @default(now()) @updatedAt @db.Timestamp(0)
   uploads                uploads[]
   bookings               bookings[]
+  account_transactions   account_transactions[]
 }
 
 model customers {
@@ -130,49 +147,81 @@ model customers {
   bookings                       bookings[]
 }
 
-model migrations {
-  id        Int    @id @default(autoincrement())
-  migration String @db.VarChar(255)
-  batch     Int
+model accounts {
+  id                   Int                    @id @default(autoincrement())
+  account_name         String                 @db.VarChar(255)
+  account_number       String                 @db.VarChar(255)
+  account_bank         String                 @db.VarChar(255)
+  account_status       String                 @db.VarChar(255)
+  created_at           DateTime?              @default(now()) @db.Timestamp(0)
+  updated_at           DateTime?              @default(now()) @updatedAt @db.Timestamp(0)
+  account_transactions account_transactions[]
 }
 
-model personal_access_tokens {
-  id             Int       @id @default(autoincrement())
-  tokenable_type String    @db.VarChar(255)
-  tokenable_id   Int
-  name           String    @db.VarChar(255)
-  token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
-  abilities      String?   @db.Text
-  last_used_at   DateTime? @db.Timestamp(0)
-  expires_at     DateTime? @db.Timestamp(0)
-  created_at     DateTime? @default(now()) @db.Timestamp(0)
-  updated_at     DateTime? @default(now()) @updatedAt @db.Timestamp(0)
-
-  @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
+model account_transactions {
+  id                 Int       @id @default(autoincrement())
+  account            accounts  @relation(fields: [account_id], references: [id])
+  account_id         Int
+  booking            bookings? @relation(fields: [booking_id], references: [id])
+  booking_id         Int?
+  car                cars?     @relation(fields: [car_id], references: [id])
+  car_id             Int?
+  transaction_type   String    @db.VarChar(255)
+  transaction_date   DateTime  @default(now()) @db.Timestamp(0)
+  transaction_amount Int
+  transaction_note   String?   @db.Text
+  upload_id          Int?
+  upload             uploads?  @relation(fields: [upload_id], references: [id])
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @default(now()) @updatedAt @db.Timestamp(0)
 }
 
-model sessions {
-  id            String  @id @db.VarChar(255)
-  user_id       Int?
-  ip_address    String? @db.VarChar(45)
-  user_agent    String? @db.Text
-  payload       String  @db.LongText
-  last_activity Int
+// model migrations {
+//   id        Int    @id @default(autoincrement())
+//   migration String @db.VarChar(255)
+//   batch     Int
+// }
 
-  @@index([last_activity], map: "sessions_last_activity_index")
-  @@index([user_id], map: "sessions_user_id_index")
-}
+// model personal_access_tokens {
+//   id             Int       @id @default(autoincrement())
+//   tokenable_type String    @db.VarChar(255)
+//   tokenable_id   Int
+//   name           String    @db.VarChar(255)
+//   token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
+//   abilities      String?   @db.Text
+//   last_used_at   DateTime? @db.Timestamp(0)
+//   expires_at     DateTime? @db.Timestamp(0)
+//   created_at     DateTime? @default(now()) @db.Timestamp(0)
+//   updated_at     DateTime? @default(now()) @updatedAt @db.Timestamp(0)
+
+//   @@index([tokenable_type, tokenable_id], map: "personal_access_tokens_tokenable_type_tokenable_id_index")
+// }
+
+// model sessions {
+//   id            String  @id @db.VarChar(255)
+//   user_id       Int?
+//   ip_address    String? @db.VarChar(45)
+//   user_agent    String? @db.Text
+//   payload       String  @db.LongText
+//   last_activity Int
+
+//   @@index([last_activity], map: "sessions_last_activity_index")
+//   @@index([user_id], map: "sessions_user_id_index")
+// }
 
 model uploads {
-  id        Int      @id @default(autoincrement())
-  order     Int?
-  ref_id    Int
-  type      String
-  file_name String
-  extension String?
-  file_path String
-  createdAt DateTime @default(now()) @db.Timestamp(0)
-  car       cars     @relation(fields: [ref_id], references: [id])
+  id                   Int                    @id @default(autoincrement())
+  order                Int?
+  booking_id           Int?
+  car_id               Int?
+  type                 String
+  file_name            String
+  extension            String?
+  file_path            String
+  createdAt            DateTime               @default(now()) @db.Timestamp(0)
+  car                  cars?                  @relation(fields: [car_id], references: [id])
+  booking              bookings?              @relation(fields: [booking_id], references: [id])
+  account_transactions account_transactions[]
 }
 
 model users {

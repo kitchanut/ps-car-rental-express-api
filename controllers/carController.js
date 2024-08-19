@@ -16,6 +16,7 @@ router.get("/", async (req, res) => {
         car_model: true,
         car_sub_model: true,
         uploads: true,
+        bookings: true,
       },
       where: {
         ...(branch_id && { branch_id: parseInt(branch_id) }),

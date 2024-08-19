@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
+const upload = require("./storageController");
 const path = require("path");
 const fs = require("fs");
 
@@ -8,25 +8,13 @@ const fs = require("fs");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Configure Multer for file storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/" + req.body.location);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage: storage });
-
 router.post("/", upload.array("files", 10), async (req, res) => {
   try {
     const files = req.files;
     const fileData = files.map((file, index) => ({
-      extension: path.extname(file.originalname),
+      extension: file.mimetype,
       order: index + 1,
-      ref_id: parseInt(req.body.id),
+      ...(req.body.type == "car" && { car_id: parseInt(req.body.id) }),
       type: req.body.type,
       file_name: file.originalname,
       file_path: file.path,
@@ -50,7 +38,7 @@ router.get("/", async (req, res) => {
   try {
     const uploads = await prisma.uploads.findMany({
       where: {
-        ref_id: parseInt(id),
+        ...(type == "car" && { car_id: parseInt(id) }),
         type: type,
       },
     });

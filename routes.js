@@ -6,6 +6,8 @@ const authMiddleware = require("./middleware/authMiddleware");
 
 // Controllers
 const authController = require("./controllers/authController");
+const accountController = require("./controllers/accountController");
+const accountTransactionController = require("./controllers/accountTransactionController");
 const uploadController = require("./controllers/uploadController");
 const branchController = require("./controllers/branchController");
 const carController = require("./controllers/carController");
@@ -23,6 +25,8 @@ router.use("/upload", uploadController);
 
 // Authenticated routes
 router.use("/branches", authMiddleware, branchController);
+router.use("/accounts", authMiddleware, accountController);
+router.use("/account_transactions", authMiddleware, accountTransactionController);
 router.use("/cars", authMiddleware, carController);
 router.use("/car_brands", authMiddleware, carBrandController);
 router.use("/car_models", authMiddleware, carModelController);

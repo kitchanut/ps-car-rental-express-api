@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const upload = require("./storageController");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
@@ -74,8 +75,8 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   let data = req.body;
-  data.pickup_date = new Date(data.pickup_date).toISOString();
-  data.return_date = new Date(data.return_date).toISOString();
+  data.pickup_date ? (data.pickup_date = new Date(data.pickup_date).toISOString()) : "";
+  data.return_date ? (data.return_date = new Date(data.return_date).toISOString()) : "";
   try {
     const updated_bookings = await prisma.bookings.update({
       where: { id: parseInt(id) },
@@ -91,7 +92,6 @@ router.put("/:id", async (req, res) => {
 // Delete a bookings
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   try {
     await prisma.bookings.delete({
       where: {
@@ -104,5 +104,15 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "An error occurred while deleting the bookings." });
   }
 });
+
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "uploads/" + req.body.location);
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, `${Date.now()}-${file.originalname}`);
+//   },
+// });
+// const upload = multer({ storage });
 
 module.exports = router;

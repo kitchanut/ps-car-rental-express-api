@@ -5,8 +5,13 @@ CREATE TABLE `bookings` (
     `customer_id` INTEGER NOT NULL,
     `car_id` INTEGER NOT NULL,
     `pickup_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `pickup_location` VARCHAR(255) NOT NULL,
+    `pickup_branch_id` INTEGER NOT NULL,
     `return_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `return_location` VARCHAR(255) NOT NULL,
+    `return_branch_id` INTEGER NOT NULL,
     `rental_per_day` INTEGER NOT NULL,
+    `required_driver` BOOLEAN NOT NULL DEFAULT false,
     `driver_per_day` INTEGER NOT NULL DEFAULT 0,
     `extra_charge` INTEGER NOT NULL,
     `discount` INTEGER NOT NULL,
@@ -16,6 +21,7 @@ CREATE TABLE `bookings` (
     `total` INTEGER NOT NULL,
     `deposit` INTEGER NOT NULL,
     `net_total` INTEGER NOT NULL,
+    `booking_note` TEXT NULL,
     `booking_status` VARCHAR(255) NOT NULL,
     `created_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
@@ -125,43 +131,32 @@ CREATE TABLE `customers` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `migrations` (
+CREATE TABLE `accounts` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `migration` VARCHAR(255) NOT NULL,
-    `batch` INTEGER NOT NULL,
-
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `personal_access_tokens` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `tokenable_type` VARCHAR(255) NOT NULL,
-    `tokenable_id` INTEGER NOT NULL,
-    `name` VARCHAR(255) NOT NULL,
-    `token` VARCHAR(64) NOT NULL,
-    `abilities` TEXT NULL,
-    `last_used_at` TIMESTAMP(0) NULL,
-    `expires_at` TIMESTAMP(0) NULL,
+    `account_name` VARCHAR(255) NOT NULL,
+    `account_number` VARCHAR(255) NOT NULL,
+    `account_bank` VARCHAR(255) NOT NULL,
+    `account_status` VARCHAR(255) NOT NULL,
     `created_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
 
-    UNIQUE INDEX `personal_access_tokens_token_unique`(`token`),
-    INDEX `personal_access_tokens_tokenable_type_tokenable_id_index`(`tokenable_type`, `tokenable_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `sessions` (
-    `id` VARCHAR(255) NOT NULL,
-    `user_id` INTEGER NULL,
-    `ip_address` VARCHAR(45) NULL,
-    `user_agent` TEXT NULL,
-    `payload` LONGTEXT NOT NULL,
-    `last_activity` INTEGER NOT NULL,
+CREATE TABLE `account_transactions` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `account_id` INTEGER NOT NULL,
+    `booking_id` INTEGER NULL,
+    `car_id` INTEGER NULL,
+    `transaction_type` VARCHAR(255) NOT NULL,
+    `transaction_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `transaction_amount` INTEGER NOT NULL,
+    `transaction_note` TEXT NULL,
+    `upload_id` INTEGER NULL,
+    `created_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `updated_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
 
-    INDEX `sessions_last_activity_index`(`last_activity`),
-    INDEX `sessions_user_id_index`(`user_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -169,7 +164,8 @@ CREATE TABLE `sessions` (
 CREATE TABLE `uploads` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `order` INTEGER NULL,
-    `ref_id` INTEGER NOT NULL,
+    `booking_id` INTEGER NULL,
+    `car_id` INTEGER NULL,
     `type` VARCHAR(191) NOT NULL,
     `file_name` VARCHAR(191) NOT NULL,
     `extension` VARCHAR(191) NULL,
@@ -204,6 +200,12 @@ ALTER TABLE `bookings` ADD CONSTRAINT `bookings_customer_id_fkey` FOREIGN KEY (`
 ALTER TABLE `bookings` ADD CONSTRAINT `bookings_car_id_fkey` FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `bookings` ADD CONSTRAINT `bookings_pickup_branch_id_fkey` FOREIGN KEY (`pickup_branch_id`) REFERENCES `branches`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `bookings` ADD CONSTRAINT `bookings_return_branch_id_fkey` FOREIGN KEY (`return_branch_id`) REFERENCES `branches`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `car_models` ADD CONSTRAINT `car_models_car_brand_id_fkey` FOREIGN KEY (`car_brand_id`) REFERENCES `car_brands`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -225,7 +227,22 @@ ALTER TABLE `cars` ADD CONSTRAINT `cars_car_model_id_fkey` FOREIGN KEY (`car_mod
 ALTER TABLE `cars` ADD CONSTRAINT `cars_car_sub_model_id_fkey` FOREIGN KEY (`car_sub_model_id`) REFERENCES `car_sub_models`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `uploads` ADD CONSTRAINT `uploads_ref_id_fkey` FOREIGN KEY (`ref_id`) REFERENCES `cars`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `account_transactions` ADD CONSTRAINT `account_transactions_account_id_fkey` FOREIGN KEY (`account_id`) REFERENCES `accounts`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `account_transactions` ADD CONSTRAINT `account_transactions_booking_id_fkey` FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `account_transactions` ADD CONSTRAINT `account_transactions_car_id_fkey` FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `account_transactions` ADD CONSTRAINT `account_transactions_upload_id_fkey` FOREIGN KEY (`upload_id`) REFERENCES `uploads`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `uploads` ADD CONSTRAINT `uploads_car_id_fkey` FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `uploads` ADD CONSTRAINT `uploads_booking_id_fkey` FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `users` ADD CONSTRAINT `users_branch_id_fkey` FOREIGN KEY (`branch_id`) REFERENCES `branches`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

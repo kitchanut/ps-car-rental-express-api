@@ -12,7 +12,13 @@ router.get("/", async (req, res) => {
     const { booking_id } = req.query;
     const booking_pickups = await prisma.booking_pickups.findMany({
       include: {
-        booking: true,
+        booking: {
+          include: {
+            uploads: {
+              where: { type: "รับรถ" },
+            },
+          },
+        },
       },
       where: {
         ...(booking_id && { booking_id: parseInt(booking_id) }),
@@ -40,7 +46,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create a new booking_pickups
-router.post("/", upload.single("file"), async (req, res) => {
+router.post("/", upload.array("files", 10), async (req, res) => {
   const data = req.body;
   try {
     const new_booking_pickups = await prisma.booking_pickups.create({
@@ -50,15 +56,16 @@ router.post("/", upload.single("file"), async (req, res) => {
         ...(data.pickup_note && { pickup_note: data.pickup_note }),
       },
     });
-    if (req.file) {
-      const fileData = {
+    const files = req.files;
+    if (files.length > 0) {
+      const fileData = files.map((file, index) => ({
         booking_id: new_booking_pickups.booking_id,
         type: "รับรถ",
-        file_name: req.file.originalname,
-        extension: req.file.mimetype,
-        file_path: req.file.path,
-      };
-      await prisma.uploads.create({ data: fileData });
+        file_name: file.originalname,
+        extension: file.mimetype,
+        file_path: file.path,
+      }));
+      await prisma.uploads.createMany({ data: fileData });
     }
     res.status(201).json(new_booking_pickups);
   } catch (error) {

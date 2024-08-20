@@ -15,6 +15,7 @@ router.post("/", upload.array("files", 10), async (req, res) => {
       extension: file.mimetype,
       order: index + 1,
       ...(req.body.type == "car" && { car_id: parseInt(req.body.id) }),
+      ...(req.body.type == "รับรถ" && { booking_id: parseInt(req.body.id) }),
       type: req.body.type,
       file_name: file.originalname,
       file_path: file.path,

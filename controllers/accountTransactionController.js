@@ -54,9 +54,9 @@ router.post("/", upload.single("file"), async (req, res) => {
     let uploads;
     if (req.file) {
       const fileData = {
-        extension: req.file.mimetype,
         type: data.transaction_type,
         file_name: req.file.originalname,
+        extension: req.file.mimetype,
         file_path: req.file.path,
       };
       uploads = await prisma.uploads.create({ data: fileData });
@@ -74,9 +74,19 @@ router.post("/", upload.single("file"), async (req, res) => {
         ...(req.file && { upload_id: parseInt(uploads.id) }),
       },
     });
+    if (req.file) {
+      const updated_uploads = await prisma.uploads.update({
+        where: { id: parseInt(uploads.id) },
+        data: {
+          ...(data.booking_id && { booking_id: parseInt(data.booking_id) }),
+          ...(data.car_id && { car_id: parseInt(data.car_id) }),
+        },
+      });
+    }
 
     res.status(200).json(account_transactions);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while creating the account_transactions." });
   }
 });
@@ -102,9 +112,10 @@ router.post("/:id", upload.single("file"), async (req, res) => {
     let uploads;
     if (req.file) {
       const fileData = {
-        extension: req.file.mimetype,
+        booking_id: parseInt(id),
         type: data.transaction_type,
         file_name: req.file.originalname,
+        extension: req.file.mimetype,
         file_path: req.file.path,
       };
       uploads = await prisma.uploads.create({ data: fileData });
@@ -145,6 +156,7 @@ router.delete("/:id", async (req, res) => {
       });
     }
     // delete the account_transactions
+    await prisma.uploads.delete({ where: { id: parseInt(account_transactions.upload_id) } });
     await prisma.account_transactions.delete({ where: { id: Number(id) } });
     res.status(200).end();
   } catch (error) {

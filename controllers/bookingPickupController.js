@@ -4,7 +4,7 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // Upload
-const upload = require("./storageController");
+const uploadMiddleware = require("../middleware/uploadMiddleware");
 
 // Get all booking_pickups
 router.get("/", async (req, res) => {
@@ -46,7 +46,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create a new booking_pickups
-router.post("/", upload.array("files", 10), async (req, res) => {
+router.post("/", uploadMiddleware({}), async (req, res) => {
   const data = req.body;
   try {
     const new_booking_pickups = await prisma.booking_pickups.create({
@@ -67,7 +67,7 @@ router.post("/", upload.array("files", 10), async (req, res) => {
       }));
       await prisma.uploads.createMany({ data: fileData });
     }
-    res.status(201).json(new_booking_pickups);
+    res.status(200).json(new_booking_pickups);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "An error occurred while creating the booking_pickups." });
@@ -88,6 +88,7 @@ router.put("/:id", async (req, res) => {
     });
     res.json(updated_booking_pickups);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while updating the booking_pickups." });
   }
 });

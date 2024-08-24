@@ -10,6 +10,7 @@ datasource db {
 
 model bookings {
   id                   Int                    @id @default(autoincrement())
+  booking_date         DateTime               @default(now()) @db.Timestamp(0)
   booking_number       String                 @db.VarChar(255)
   customer             customers              @relation(fields: [customer_id], references: [id])
   customer_id          Int
@@ -42,6 +43,7 @@ model bookings {
   account_transactions account_transactions[]
   uploads              uploads[]
   booking_pickups      booking_pickups[]
+  booking_returns      booking_returns[]
 }
 
 model booking_pickups {
@@ -50,6 +52,15 @@ model booking_pickups {
   pickup_date DateTime @default(now()) @db.Timestamp(0)
   pickup_note String?  @db.Text
   booking     bookings @relation(fields: [booking_id], references: [id])
+}
+
+model booking_returns {
+  id             Int      @id @default(autoincrement())
+  booking_id     Int
+  return_date    DateTime @default(now()) @db.Timestamp(0)
+  return_penalty Int
+  return_note    String?  @db.Text
+  booking        bookings @relation(fields: [booking_id], references: [id])
 }
 
 model branches {

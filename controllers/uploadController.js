@@ -1,36 +1,34 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("./storageController");
+const uploadMiddleware = require("../middleware/uploadMiddleware");
 const path = require("path");
 const fs = require("fs");
+
+const multer = require("multer");
+const sharp = require("sharp");
+const upload = multer();
 
 // Prisma Client
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-router.post("/", upload.array("files", 10), async (req, res) => {
-  try {
-    const files = req.files;
-    const fileData = files.map((file, index) => ({
-      extension: file.mimetype,
-      order: index + 1,
-      ...(req.body.type == "car" && { car_id: parseInt(req.body.id) }),
-      ...(req.body.type == "รับรถ" && { booking_id: parseInt(req.body.id) }),
-      type: req.body.type,
-      file_name: file.originalname,
-      file_path: file.path,
-    }));
-    const createdFiles = await prisma.uploads.createMany({
-      data: fileData,
-    });
-    res.status(200).json({
-      message: "Files uploaded successfully",
-      files: createdFiles,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "An error occurred while uploading the file." });
-  }
+router.post("/", uploadMiddleware({}), async (req, res) => {
+  const files = req.files;
+  const fileData = files.map((file, index) => ({
+    extension: file.mimetype,
+    order: index + 1,
+    ...(req.body.type == "car" && { car_id: parseInt(req.body.id) }),
+    ...(req.body.type == "รับรถ" && { booking_id: parseInt(req.body.id) }),
+    type: req.body.type,
+    file_name: Buffer.from(file.originalname, "latin1").toString("utf8"),
+    file_path: file.path,
+  }));
+  const createdFiles = await prisma.uploads.createMany({
+    data: fileData,
+  });
+  res.status(200).json({
+    message: "Files uploaded successfully",
+  });
 });
 
 router.get("/", async (req, res) => {

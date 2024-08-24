@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const upload = require("./storageController");
+const uploadMiddleware = require("../middleware/uploadMiddleware");
+
 const fs = require("fs");
 const path = require("path");
 
@@ -48,16 +49,17 @@ router.get("/:id", async (req, res) => {
 });
 
 // Create a new account_transactions
-router.post("/", upload.single("file"), async (req, res) => {
+router.post("/", uploadMiddleware({}), async (req, res) => {
   const data = req.body;
   try {
     let uploads;
-    if (req.file) {
+    const files = req.files;
+    if (files.length > 0) {
       const fileData = {
         type: data.transaction_type,
-        file_name: req.file.originalname,
-        extension: req.file.mimetype,
-        file_path: req.file.path,
+        file_name: req.files[0].originalname,
+        extension: req.files[0].mimetype,
+        file_path: req.files[0].path,
       };
       uploads = await prisma.uploads.create({ data: fileData });
     }
@@ -71,10 +73,10 @@ router.post("/", upload.single("file"), async (req, res) => {
         transaction_date: new Date(data.transaction_date).toISOString(),
         transaction_amount: parseInt(data.transaction_amount),
         transaction_note: data.transaction_note ?? null,
-        ...(req.file && { upload_id: parseInt(uploads.id) }),
+        ...(req.files.length > 0 && { upload_id: parseInt(uploads.id) }),
       },
     });
-    if (req.file) {
+    if (req.files.length > 0) {
       const updated_uploads = await prisma.uploads.update({
         where: { id: parseInt(uploads.id) },
         data: {
@@ -92,13 +94,13 @@ router.post("/", upload.single("file"), async (req, res) => {
 });
 
 // Update a account_transactions
-router.post("/:id", upload.single("file"), async (req, res) => {
+router.post("/:id", uploadMiddleware({}), async (req, res) => {
   const { id } = req.params;
   const data = req.body;
   try {
     const account_transactions = await prisma.account_transactions.findUnique({ where: { id: parseInt(id) } });
     // delete the existing file
-    if (account_transactions.upload_id && req.file) {
+    if (account_transactions.upload_id && req.files.length > 0) {
       const fileRecord = await prisma.uploads.findUnique({ where: { id: parseInt(account_transactions.upload_id) } });
       if (fileRecord) {
         fs.unlink(path.join(path.resolve(__dirname, ".."), fileRecord.file_path), async (err) => {
@@ -110,13 +112,13 @@ router.post("/:id", upload.single("file"), async (req, res) => {
 
     // create a new file
     let uploads;
-    if (req.file) {
+    const files = req.files;
+    if (files.length > 0) {
       const fileData = {
-        booking_id: parseInt(id),
         type: data.transaction_type,
-        file_name: req.file.originalname,
-        extension: req.file.mimetype,
-        file_path: req.file.path,
+        file_name: req.files[0].originalname,
+        extension: req.files[0].mimetype,
+        file_path: req.files[0].path,
       };
       uploads = await prisma.uploads.create({ data: fileData });
     }
@@ -131,9 +133,18 @@ router.post("/:id", upload.single("file"), async (req, res) => {
         transaction_date: new Date(data.transaction_date).toISOString(),
         transaction_amount: parseInt(data.transaction_amount),
         transaction_note: data.transaction_note ?? null,
-        ...(req.file && { upload_id: parseInt(uploads.id) }),
+        ...(req.files.length > 0 && { upload_id: parseInt(uploads.id) }),
       },
     });
+    if (req.files.length > 0) {
+      const updated_uploads = await prisma.uploads.update({
+        where: { id: parseInt(uploads.id) },
+        data: {
+          ...(data.booking_id && { booking_id: parseInt(data.booking_id) }),
+          ...(data.car_id && { car_id: parseInt(data.car_id) }),
+        },
+      });
+    }
     res.json(updated_account_transactions);
   } catch (error) {
     console.log(error);
@@ -156,7 +167,9 @@ router.delete("/:id", async (req, res) => {
       });
     }
     // delete the account_transactions
-    await prisma.uploads.delete({ where: { id: parseInt(account_transactions.upload_id) } });
+    if (account_transactions.upload_id) {
+      await prisma.uploads.delete({ where: { id: parseInt(account_transactions.upload_id) } });
+    }
     await prisma.account_transactions.delete({ where: { id: Number(id) } });
     res.status(200).end();
   } catch (error) {

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `bookings` ADD COLUMN `booking_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0);

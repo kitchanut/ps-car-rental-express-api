@@ -19,6 +19,7 @@ const userController = require("./controllers/userController");
 const customerController = require("./controllers/customerController");
 const bookingController = require("./controllers/bookingController");
 const bookingPickupController = require("./controllers/bookingPickupController");
+const bookingReturnController = require("./controllers/bookingReturnController");
 
 // Login routes
 router.use("/auth", authController);
@@ -37,5 +38,6 @@ router.use("/users", authMiddleware, userController);
 router.use("/customers", authMiddleware, customerController);
 router.use("/bookings", authMiddleware, bookingController);
 router.use("/booking_pickups", authMiddleware, bookingPickupController);
+router.use("/booking_returns", authMiddleware, bookingReturnController);
 
 module.exports = router;

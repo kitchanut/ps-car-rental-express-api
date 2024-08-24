@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("./storageController");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const dayjs = require("dayjs");
 
 function generateBookingNumber() {
   const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -26,14 +26,92 @@ function generateBookingNumber() {
 // Get all bookings
 router.get("/", async (req, res) => {
   try {
+    const { query_period_by, period, status } = req.query;
+    // startus string to array
+    let statusArray = [];
+    if (status) {
+      statusArray = status.split(",");
+    }
+    let start, end;
+    if (period == "D") {
+      start = dayjs().startOf("day");
+      end = dayjs().endOf("day");
+    } else if (period == "W") {
+      start = dayjs().startOf("week");
+      end = dayjs().endOf("week");
+    } else if (period == "M") {
+      start = dayjs().startOf("month");
+      end = dayjs().endOf("month");
+    } else if (period == "3M") {
+      start = dayjs().startOf("month").subtract(3, "month");
+      end = dayjs().endOf("month");
+    } else if (period == "6M") {
+      start = dayjs().startOf("month").subtract(6, "month");
+      end = dayjs().endOf("month");
+    } else if (period == "Y") {
+      start = dayjs().startOf("year");
+      end = dayjs().endOf("year");
+    } else if (period == "2Y") {
+      start = dayjs().startOf("year").subtract(1, "year");
+      end = dayjs().endOf("year");
+    } else if (period == "3Y") {
+      start = dayjs().startOf("year").subtract(2, "year");
+      end = dayjs().endOf("year");
+    } else if (period == "lastDay") {
+      start = dayjs().subtract(1, "day").startOf("day");
+      end = dayjs().subtract(1, "day").endOf("day");
+    } else if (period == "nextDay") {
+      start = dayjs().add(1, "day").startOf("day");
+      end = dayjs().add(1, "day").endOf("day");
+    }
+
+    let statusCondition = {};
+    if (statusArray.length > 0) {
+      statusCondition = { booking_status: { in: statusArray } };
+    }
+
+    let dateConditions = [];
+    let orderByCondition = [];
+    if (query_period_by === "booking_date") {
+      dateConditions.push({ booking_date: { gte: start } });
+      dateConditions.push({ booking_date: { lte: end } });
+      orderByCondition.push({ booking_date: "desc" });
+    } else if (query_period_by === "pickup_date") {
+      dateConditions.push({ pickup_date: { gte: start } });
+      dateConditions.push({ pickup_date: { lte: end } });
+      orderByCondition.push({ pickup_date: "desc" });
+    } else if (query_period_by === "return_date") {
+      dateConditions.push({ return_date: { gte: start } });
+      dateConditions.push({ return_date: { lte: end } });
+      orderByCondition.push({ return_date: "desc" });
+    }
+
+    const whereClause = {
+      ...statusCondition,
+      AND: dateConditions,
+    };
+
     const bookings = await prisma.bookings.findMany({
       include: {
         customer: true,
-        car: true,
+        pickup_branch: true,
+        return_branch: true,
+        car: {
+          include: {
+            car_model: true,
+          },
+        },
       },
+      where: whereClause,
+      orderBy: orderByCondition,
     });
     res.json(bookings);
+    // res.json({
+    //   start: start,
+    //   end: end,
+    // });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occurred while fetching bookings." });
   }
 });
@@ -58,6 +136,7 @@ router.post("/", async (req, res) => {
   const data = req.body;
   data.booking_number = generateBookingNumber();
   data.booking_status = "จอง";
+  data.booking_date = new Date(data.booking_date).toISOString();
   data.pickup_date = new Date(data.pickup_date).toISOString();
   data.return_date = new Date(data.return_date).toISOString();
   try {
@@ -75,6 +154,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   let data = req.body;
+  data.booking_date ? (data.booking_date = new Date(data.booking_date).toISOString()) : "";
   data.pickup_date ? (data.pickup_date = new Date(data.pickup_date).toISOString()) : "";
   data.return_date ? (data.return_date = new Date(data.return_date).toISOString()) : "";
   try {
@@ -104,15 +184,5 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: "An error occurred while deleting the bookings." });
   }
 });
-
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads/" + req.body.location);
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, `${Date.now()}-${file.originalname}`);
-//   },
-// });
-// const upload = multer({ storage });
 
 module.exports = router;

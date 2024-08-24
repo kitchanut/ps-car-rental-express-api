@@ -58,6 +58,7 @@ const uploadMiddleware = (options) => {
                 image.resize(resize || 1024);
               }
               image.webp({ quality: quality || 90 });
+              image.rotate();
               await image.toFile(outputPath);
             } else {
               outputPath = path.join(destination, `${Date.now()}-${originalName}`);

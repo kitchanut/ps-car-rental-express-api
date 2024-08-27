@@ -1,6 +1,8 @@
 -- CreateTable
 CREATE TABLE `bookings` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `branch_id` INTEGER NULL,
+    `booking_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `booking_number` VARCHAR(255) NOT NULL,
     `customer_id` INTEGER NOT NULL,
     `car_id` INTEGER NOT NULL,
@@ -11,6 +13,7 @@ CREATE TABLE `bookings` (
     `return_location` VARCHAR(255) NOT NULL,
     `return_branch_id` INTEGER NOT NULL,
     `rental_per_day` INTEGER NOT NULL,
+    `rental` INTEGER NOT NULL,
     `required_driver` BOOLEAN NOT NULL DEFAULT false,
     `driver_per_day` INTEGER NOT NULL DEFAULT 0,
     `extra_charge` INTEGER NOT NULL,
@@ -25,6 +28,27 @@ CREATE TABLE `bookings` (
     `booking_status` VARCHAR(255) NOT NULL,
     `created_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `booking_pickups` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `booking_id` INTEGER NOT NULL,
+    `pickup_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `pickup_note` TEXT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `booking_returns` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `booking_id` INTEGER NOT NULL,
+    `return_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `return_penalty` INTEGER NOT NULL,
+    `return_note` TEXT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -103,6 +127,9 @@ CREATE TABLE `cars` (
     `rental_per_day` INTEGER NOT NULL,
     `driver_per_day` INTEGER NOT NULL,
     `deposit` INTEGER NOT NULL,
+    `excess_houre_free` INTEGER NOT NULL,
+    `excess_houre_charge` INTEGER NOT NULL,
+    `excess_price` INTEGER NOT NULL,
     `car_status` VARCHAR(255) NOT NULL,
     `created_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
@@ -153,7 +180,6 @@ CREATE TABLE `account_transactions` (
     `transaction_date` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
     `transaction_amount` INTEGER NOT NULL,
     `transaction_note` TEXT NULL,
-    `upload_id` INTEGER NULL,
     `created_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
     `updated_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
 
@@ -164,11 +190,13 @@ CREATE TABLE `account_transactions` (
 CREATE TABLE `uploads` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `order` INTEGER NULL,
-    `booking_id` INTEGER NULL,
     `car_id` INTEGER NULL,
+    `booking_id` INTEGER NULL,
+    `account_transaction_id` INTEGER NULL,
     `type` VARCHAR(191) NOT NULL,
     `file_name` VARCHAR(191) NOT NULL,
     `extension` VARCHAR(191) NULL,
+    `size` INTEGER NOT NULL DEFAULT 0,
     `file_path` VARCHAR(191) NOT NULL,
     `createdAt` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
 
@@ -206,6 +234,12 @@ ALTER TABLE `bookings` ADD CONSTRAINT `bookings_pickup_branch_id_fkey` FOREIGN K
 ALTER TABLE `bookings` ADD CONSTRAINT `bookings_return_branch_id_fkey` FOREIGN KEY (`return_branch_id`) REFERENCES `branches`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `booking_pickups` ADD CONSTRAINT `booking_pickups_booking_id_fkey` FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `booking_returns` ADD CONSTRAINT `booking_returns_booking_id_fkey` FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `car_models` ADD CONSTRAINT `car_models_car_brand_id_fkey` FOREIGN KEY (`car_brand_id`) REFERENCES `car_brands`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -236,13 +270,13 @@ ALTER TABLE `account_transactions` ADD CONSTRAINT `account_transactions_booking_
 ALTER TABLE `account_transactions` ADD CONSTRAINT `account_transactions_car_id_fkey` FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `account_transactions` ADD CONSTRAINT `account_transactions_upload_id_fkey` FOREIGN KEY (`upload_id`) REFERENCES `uploads`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE `uploads` ADD CONSTRAINT `uploads_car_id_fkey` FOREIGN KEY (`car_id`) REFERENCES `cars`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `uploads` ADD CONSTRAINT `uploads_booking_id_fkey` FOREIGN KEY (`booking_id`) REFERENCES `bookings`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `uploads` ADD CONSTRAINT `uploads_account_transaction_id_fkey` FOREIGN KEY (`account_transaction_id`) REFERENCES `account_transactions`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `users` ADD CONSTRAINT `users_branch_id_fkey` FOREIGN KEY (`branch_id`) REFERENCES `branches`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

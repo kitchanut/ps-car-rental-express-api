@@ -15,12 +15,13 @@ const prisma = new PrismaClient();
 router.post("/", uploadMiddleware({}), async (req, res) => {
   const files = req.files;
   const fileData = files.map((file, index) => ({
-    extension: file.mimetype,
     order: index + 1,
     ...(req.body.car_id && { car_id: parseInt(req.body.car_id) }),
     ...(req.body.booking_id && { booking_id: parseInt(req.body.booking_id) }),
     type: req.body.type,
     file_name: Buffer.from(file.originalname, "latin1").toString("utf8"),
+    extension: file.mimetype,
+    size: file.size,
     file_path: file.path,
   }));
   const createdFiles = await prisma.uploads.createMany({

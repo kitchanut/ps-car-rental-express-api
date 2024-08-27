@@ -43,13 +43,13 @@ model bookings {
   updated_at           DateTime?              @default(now()) @updatedAt @db.Timestamp(0)
   account_transactions account_transactions[]
   uploads              uploads[]
-  booking_pickups      booking_pickups[]
-  booking_returns      booking_returns[]
+  booking_pickups      booking_pickups?
+  booking_returns      booking_returns?
 }
 
 model booking_pickups {
   id          Int      @id @default(autoincrement())
-  booking_id  Int
+  booking_id  Int      @unique
   pickup_date DateTime @default(now()) @db.Timestamp(0)
   pickup_note String?  @db.Text
   booking     bookings @relation(fields: [booking_id], references: [id])
@@ -57,7 +57,7 @@ model booking_pickups {
 
 model booking_returns {
   id             Int      @id @default(autoincrement())
-  booking_id     Int
+  booking_id     Int      @unique
   return_date    DateTime @default(now()) @db.Timestamp(0)
   return_penalty Int
   return_note    String?  @db.Text
@@ -184,8 +184,6 @@ model account_transactions {
   account_id         Int
   booking_id         Int?
   car_id             Int?
-  upload_id          Int?
-  upload             uploads?  @relation(fields: [upload_id], references: [id])
   transaction_type   String    @db.VarChar(255)
   transaction_date   DateTime  @default(now()) @db.Timestamp(0)
   transaction_amount Int
@@ -195,21 +193,24 @@ model account_transactions {
   account            accounts  @relation(fields: [account_id], references: [id])
   booking            bookings? @relation(fields: [booking_id], references: [id])
   car                cars?     @relation(fields: [car_id], references: [id])
+  uploads            uploads[]
 }
 
 model uploads {
-  id                   Int                    @id @default(autoincrement())
-  order                Int?
-  booking_id           Int?
-  car_id               Int?
-  type                 String
-  file_name            String
-  extension            String?
-  file_path            String
-  createdAt            DateTime               @default(now()) @db.Timestamp(0)
-  car                  cars?                  @relation(fields: [car_id], references: [id])
-  booking              bookings?              @relation(fields: [booking_id], references: [id])
-  account_transactions account_transactions[]
+  id                     Int                   @id @default(autoincrement())
+  order                  Int?
+  car_id                 Int?
+  booking_id             Int?
+  account_transaction_id Int?
+  type                   String
+  file_name              String
+  extension              String?
+  size                   Int                   @default(0)
+  file_path              String
+  createdAt              DateTime              @default(now()) @db.Timestamp(0)
+  car                    cars?                 @relation(fields: [car_id], references: [id])
+  booking                bookings?             @relation(fields: [booking_id], references: [id])
+  account_transaction    account_transactions? @relation(fields: [account_transaction_id], references: [id])
 }
 
 model users {

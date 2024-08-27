@@ -2,10 +2,30 @@ const express = require("express");
 const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const dayjs = require("dayjs");
 
 // Get all cars
 router.get("/", async (req, res) => {
   const branch_id = req.headers["branch-id"];
+  const { include } = req.query;
+  let includeConditions = {};
+  const includeArray = include ? include.split(",") : [];
+  includeArray.forEach((element) => {
+    if (element === "bookings") {
+      start = dayjs().startOf("day").subtract(7, "day");
+      end = dayjs().endOf("day").add(60, "day");
+      includeConditions[element] = {
+        include: {
+          booking_returns: true,
+        },
+        where: {
+          AND: [{ pickup_date: { gte: start } }, { pickup_date: { lte: end } }],
+        },
+      };
+    } else {
+      includeConditions[element] = true;
+    }
+  });
   try {
     const cars = await prisma.cars.findMany({
       include: {
@@ -15,7 +35,7 @@ router.get("/", async (req, res) => {
         car_model: true,
         car_sub_model: true,
         uploads: true,
-        bookings: true,
+        ...includeConditions,
       },
       where: {
         ...(branch_id && { branch_id: parseInt(branch_id) }),

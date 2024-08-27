@@ -121,7 +121,27 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   try {
-    const bookings = await prisma.bookings.findUnique({ where: { id: parseInt(id) } });
+    const bookings = await prisma.bookings.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        customer: true,
+        pickup_branch: true,
+        return_branch: true,
+        booking_pickups: true,
+        booking_returns: true,
+        car: {
+          include: {
+            car_brand: true,
+            car_model: true,
+          },
+        },
+        account_transactions: {
+          where: {
+            transaction_type: { in: ["รับเงินมัดจำ", "คืนเงินมัดจำ"] },
+          },
+        },
+      },
+    });
     if (bookings) {
       res.json(bookings);
     } else {

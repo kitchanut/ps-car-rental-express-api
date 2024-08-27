@@ -78,6 +78,7 @@ router.post("/", uploadMiddleware({}), async (req, res) => {
   try {
     const account_transactions = await prisma.account_transactions.create({
       data: {
+        type: data.type,
         account_id: parseInt(data.account_id),
         ...(data.booking_id && { booking_id: parseInt(data.booking_id) }),
         ...(data.car_id && { car_id: parseInt(data.car_id) }),
@@ -123,6 +124,7 @@ router.post("/:id", uploadMiddleware({}), async (req, res) => {
     const updated_account_transactions = await prisma.account_transactions.update({
       where: { id: parseInt(id) },
       data: {
+        type: data.type,
         account_id: parseInt(data.account_id),
         ...(data.booking_id && { booking_id: parseInt(data.booking_id) }),
         ...(data.car_id && { car_id: parseInt(data.car_id) }),

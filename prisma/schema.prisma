@@ -181,6 +181,7 @@ model accounts {
 
 model account_transactions {
   id                 Int       @id @default(autoincrement())
+  type               String?
   account_id         Int
   booking_id         Int?
   car_id             Int?

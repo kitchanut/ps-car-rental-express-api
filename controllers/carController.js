@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 // Get all cars
 router.get("/", async (req, res) => {
   // const { branch_id } = req.query;
-  const branch_id = req.headers["branch_id"];
+  const branch_id = req.headers["Branch_id"];
   try {
     const cars = await prisma.cars.findMany({
       include: {

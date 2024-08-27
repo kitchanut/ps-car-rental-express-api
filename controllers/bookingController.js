@@ -26,7 +26,7 @@ function generateBookingNumber() {
 // Get all bookings
 router.get("/", async (req, res) => {
   try {
-    const branch_id = req.headers["branch_id"];
+    const branch_id = req.headers["Branch_id"];
     const { query_period_by, period, status, include } = req.query;
 
     let start, end;

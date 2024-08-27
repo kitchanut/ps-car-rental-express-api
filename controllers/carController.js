@@ -9,23 +9,23 @@ router.get("/", async (req, res) => {
   // const branch_id = req.headers["Branch_id"];
   const headers = req.headers;
   try {
-    const cars = await prisma.cars.findMany({
-      include: {
-        branch: true,
-        car_type: true,
-        car_brand: true,
-        car_model: true,
-        car_sub_model: true,
-        uploads: true,
-        bookings: true,
-      },
-      where: {
-        ...(branch_id && { branch_id: parseInt(branch_id) }),
-      },
-      orderBy: {
-        car_model_id: "asc",
-      },
-    });
+    // const cars = await prisma.cars.findMany({
+    //   include: {
+    //     branch: true,
+    //     car_type: true,
+    //     car_brand: true,
+    //     car_model: true,
+    //     car_sub_model: true,
+    //     uploads: true,
+    //     bookings: true,
+    //   },
+    //   where: {
+    //     ...(branch_id && { branch_id: parseInt(branch_id) }),
+    //   },
+    //   orderBy: {
+    //     car_model_id: "asc",
+    //   },
+    // });
     res.json(headers);
   } catch (error) {
     console.log(error);

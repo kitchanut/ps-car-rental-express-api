@@ -5,29 +5,26 @@ const prisma = new PrismaClient();
 
 // Get all cars
 router.get("/", async (req, res) => {
-  // const { branch_id } = req.query;
-  // const branch_id = req.headers["Branch_id"];
-  const headers = req.headers;
-  const branch_id = req.get("branch_id");
+  const branch_id = req.headers["branch-id"];
   try {
-    // const cars = await prisma.cars.findMany({
-    //   include: {
-    //     branch: true,
-    //     car_type: true,
-    //     car_brand: true,
-    //     car_model: true,
-    //     car_sub_model: true,
-    //     uploads: true,
-    //     bookings: true,
-    //   },
-    //   where: {
-    //     ...(branch_id && { branch_id: parseInt(branch_id) }),
-    //   },
-    //   orderBy: {
-    //     car_model_id: "asc",
-    //   },
-    // });
-    res.json({ headers, branch_id });
+    const cars = await prisma.cars.findMany({
+      include: {
+        branch: true,
+        car_type: true,
+        car_brand: true,
+        car_model: true,
+        car_sub_model: true,
+        uploads: true,
+        bookings: true,
+      },
+      where: {
+        ...(branch_id && { branch_id: parseInt(branch_id) }),
+      },
+      orderBy: {
+        car_model_id: "asc",
+      },
+    });
+    res.json(cars);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "An error occurred while fetching cars." });

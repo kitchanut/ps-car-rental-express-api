@@ -8,6 +8,7 @@ router.get("/", async (req, res) => {
   // const { branch_id } = req.query;
   // const branch_id = req.headers["Branch_id"];
   const headers = req.headers;
+  const branch_id = req.get("branch_id");
   try {
     // const cars = await prisma.cars.findMany({
     //   include: {
@@ -26,7 +27,7 @@ router.get("/", async (req, res) => {
     //     car_model_id: "asc",
     //   },
     // });
-    res.json(headers);
+    res.json({ headers, branch_id });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "An error occurred while fetching cars." });

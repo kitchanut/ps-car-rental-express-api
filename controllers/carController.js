@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
         car_model_id: "asc",
       },
     });
-    res.json(cars);
+    res.json(branch_id);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "An error occurred while fetching cars." });

@@ -26,12 +26,9 @@ function generateBookingNumber() {
 // Get all bookings
 router.get("/", async (req, res) => {
   try {
-    const { query_period_by, period, status } = req.query;
-    // startus string to array
-    let statusArray = [];
-    if (status) {
-      statusArray = status.split(",");
-    }
+    const branch_id = req.headers["branch_id"];
+    const { query_period_by, period, status, include } = req.query;
+
     let start, end;
     if (period == "D") {
       start = dayjs().startOf("day");
@@ -65,10 +62,16 @@ router.get("/", async (req, res) => {
       end = dayjs().add(1, "day").endOf("day");
     }
 
-    let statusCondition = {};
-    if (statusArray.length > 0) {
-      statusCondition = { booking_status: { in: statusArray } };
-    }
+    // query ตามสถานะ
+    const statusArray = status ? status.split(",") : [];
+    const statusCondition = statusArray.length > 0 ? { booking_status: { in: statusArray } } : {};
+
+    // Include ตามที่ระบุ
+    let includeConditions = {};
+    const includeArray = include ? include.split(",") : [];
+    includeArray.forEach((element) => {
+      includeConditions[element] = true;
+    });
 
     let dateConditions = [];
     let orderByCondition = [];
@@ -87,6 +90,7 @@ router.get("/", async (req, res) => {
     }
 
     const whereClause = {
+      ...(branch_id && { branch_id: parseInt(branch_id) }),
       ...statusCondition,
       AND: dateConditions,
     };
@@ -101,15 +105,12 @@ router.get("/", async (req, res) => {
             car_model: true,
           },
         },
+        ...includeConditions,
       },
       where: whereClause,
       orderBy: orderByCondition,
     });
     res.json(bookings);
-    // res.json({
-    //   start: start,
-    //   end: end,
-    // });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "An error occurred while fetching bookings." });

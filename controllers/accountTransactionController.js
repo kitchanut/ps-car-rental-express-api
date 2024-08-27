@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const dayjs = require("dayjs");
 
 const uploadMiddleware = require("../middleware/uploadMiddleware");
 
@@ -13,7 +14,27 @@ const prisma = new PrismaClient();
 router.get("/", async (req, res) => {
   try {
     // get query parameters
-    const { account_id, booking_id, transaction_type } = req.query;
+    const { account_id, booking_id, car_id, transaction_type, period } = req.query;
+    let start, end;
+    if (period == "D") {
+      start = dayjs().startOf("day");
+      end = dayjs().endOf("day");
+    } else if (period == "W") {
+      start = dayjs().startOf("week");
+      end = dayjs().endOf("week");
+    } else if (period == "M") {
+      start = dayjs().startOf("month");
+      end = dayjs().endOf("month");
+    } else if (period == "3M") {
+      start = dayjs().startOf("month").subtract(3, "month");
+      end = dayjs().endOf("month");
+    } else if (period == "6M") {
+      start = dayjs().startOf("month").subtract(6, "month");
+      end = dayjs().endOf("month");
+    } else if (period == "Y") {
+      start = dayjs().startOf("year");
+      end = dayjs().endOf("year");
+    }
     const account_transactions = await prisma.account_transactions.findMany({
       include: {
         upload: true,
@@ -23,8 +44,11 @@ router.get("/", async (req, res) => {
       where: {
         ...(account_id && { account_id: parseInt(account_id) }),
         ...(booking_id && { booking_id: parseInt(booking_id) }),
+        ...(car_id && { car_id: parseInt(car_id) }),
         ...(transaction_type && { transaction_type: transaction_type }),
+        AND: [{ transaction_date: { gte: start } }, { transaction_date: { lte: end } }],
       },
+      orderBy: [{ transaction_date: "desc" }],
     });
     res.json(account_transactions);
   } catch (error) {

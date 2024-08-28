@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const axios = require("axios");
 // const path = require("path");
 const app = express();
 
@@ -43,33 +44,31 @@ app.get("/webhook", (req, res) => {
 
 app.post("/webhook", (req, res) => {
   const body = req.body;
-  if (body.object === "page") {
-    body.entry.forEach(async (entry) => {
-      const webhookEvent = entry.messaging[0];
-      console.log(webhookEvent);
-      try {
-        // Object to String
-        const webhookEventString = JSON.stringify(webhookEvent);
-        sendLineNotify(webhookEventString);
-        // const facebook_messages = await prisma.facebook_messages.create({
-        //   data: {
-        //     sender_id: webhookEvent.sender.id,
-        //     recipient_id: webhookEvent.recipient.id,
-        //     message: webhookEvent.message.text,
-        //   },
-        // });
-        // res.status(200).json(facebook_messages);
-      } catch (error) {
-        res.status(500).json({ error: "An error occurred while creating the branches." });
-      }
-    });
-
-    // ส่ง status 200 เพื่อยืนยันว่าได้รับข้อมูล
-    res.status(200).send("EVENT_RECEIVED");
-  } else {
-    // ถ้าไม่ได้รับข้อมูลที่เกี่ยวข้อง
-    res.sendStatus(404);
-  }
+  sendLineNotify(JSON.stringify(req.body));
+  res.status(200).send("EVENT_RECEIVED");
+  // if (body.object === "page") {
+  //   body.entry.forEach(async (entry) => {
+  //     const webhookEvent = entry.messaging[0];
+  //     console.log(webhookEvent);
+  //     try {
+  //       const webhookEventString = JSON.stringify(webhookEvent);
+  //       sendLineNotify(webhookEventString);
+  //       const facebook_messages = await prisma.facebook_messages.create({
+  //         data: {
+  //           sender_id: webhookEvent.sender.id,
+  //           recipient_id: webhookEvent.recipient.id,
+  //           message: webhookEvent.message.text,
+  //         },
+  //       });
+  //       res.status(200).json(facebook_messages);
+  //     } catch (error) {
+  //       res.status(500).json({ error: "An error occurred while creating the branches." });
+  //     }
+  //   });
+  //   res.status(200).send("EVENT_RECEIVED");
+  // } else {
+  //   res.sendStatus(404);
+  // }
 });
 const LINE_NOTIFY_TOKEN = "duFnBTlRddOVE4ywC3l7uYg6QxK8naXVg2GhAWYG0Nu";
 const sendLineNotify = (message) => {

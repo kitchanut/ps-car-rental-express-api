@@ -45,9 +45,21 @@ app.post("/webhook", (req, res) => {
   const body = req.body;
 
   if (body.object === "page") {
-    body.entry.forEach((entry) => {
+    body.entry.forEach(async (entry) => {
       const webhookEvent = entry.messaging[0];
       console.log(webhookEvent);
+      try {
+        const facebook_messages = await prisma.facebook_messages.create({
+          data: {
+            sender_id: webhookEvent.sender.id,
+            recipient_id: webhookEvent.recipient.id,
+            message: webhookEvent.message.text,
+          },
+        });
+        // res.status(200).json(facebook_messages);
+      } catch (error) {
+        res.status(500).json({ error: "An error occurred while creating the branches." });
+      }
     });
 
     // ส่ง status 200 เพื่อยืนยันว่าได้รับข้อมูล

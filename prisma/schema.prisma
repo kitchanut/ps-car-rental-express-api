@@ -172,6 +172,8 @@ model customers {
   customer_name                  String     @db.VarChar(255)
   customer_nickname              String?    @db.VarChar(255)
   customer_sex                   String?    @db.VarChar(255)
+  facebook_id                    String?    @db.VarChar(255)
+  facebook_name                  String?    @db.VarChar(255)
   customer_tel                   String?    @db.VarChar(255)
   customer_tel_backup            String?    @db.VarChar(255)
   customer_citizen_id            String?    @db.VarChar(255)

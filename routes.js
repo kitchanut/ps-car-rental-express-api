@@ -22,6 +22,7 @@ const bookingPickupController = require("./controllers/bookingPickupController")
 const bookingReturnController = require("./controllers/bookingReturnController");
 const facebookPageController = require("./controllers/facebookPageController");
 const reportController = require("./controllers/reportController");
+const dashboardController = require("./controllers/dashboardController");
 
 // Login routes
 router.use("/auth", authController);
@@ -43,5 +44,6 @@ router.use("/booking_pickups", authMiddleware, bookingPickupController);
 router.use("/booking_returns", authMiddleware, bookingReturnController);
 router.use("/facebook_pages", authMiddleware, facebookPageController);
 router.use("/reports", authMiddleware, reportController);
+router.use("/dashboard", authMiddleware, dashboardController);
 
 module.exports = router;

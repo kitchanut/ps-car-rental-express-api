@@ -185,6 +185,7 @@ model customers {
   created_at                     DateTime?  @default(now()) @db.Timestamp(0)
   updated_at                     DateTime?  @default(now()) @updatedAt @db.Timestamp(0)
   bookings                       bookings[]
+  uploads                        uploads[]
 }
 
 model accounts {
@@ -222,6 +223,7 @@ model uploads {
   car_id                 Int?
   booking_id             Int?
   account_transaction_id Int?
+  customer_id            Int?
   type                   String
   file_name              String
   extension              String?
@@ -231,6 +233,7 @@ model uploads {
   car                    cars?                 @relation(fields: [car_id], references: [id])
   booking                bookings?             @relation(fields: [booking_id], references: [id])
   account_transaction    account_transactions? @relation(fields: [account_transaction_id], references: [id])
+  customer               customers?            @relation(fields: [customer_id], references: [id])
 }
 
 model users {

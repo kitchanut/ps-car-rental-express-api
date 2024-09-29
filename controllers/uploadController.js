@@ -18,6 +18,7 @@ router.post("/", uploadMiddleware({}), async (req, res) => {
     order: index + 1,
     ...(req.body.car_id && { car_id: parseInt(req.body.car_id) }),
     ...(req.body.booking_id && { booking_id: parseInt(req.body.booking_id) }),
+    ...(req.body.customer_id && { customer_id: parseInt(req.body.customer_id) }),
     type: req.body.type,
     file_name: Buffer.from(file.originalname, "latin1").toString("utf8"),
     extension: file.mimetype,
@@ -39,6 +40,7 @@ router.get("/", async (req, res) => {
     const uploads = await prisma.uploads.findMany({
       where: {
         ...(type == "car" && { car_id: parseInt(id) }),
+        ...(type == "customers" && { customer_id: parseInt(id) }),
         type: type,
       },
     });

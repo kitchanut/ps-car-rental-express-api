@@ -41,6 +41,7 @@ router.get("/", async (req, res) => {
       where: {
         ...(type == "car" && { car_id: parseInt(id) }),
         ...(type == "customers" && { customer_id: parseInt(id) }),
+        ...(type == "bookings" && { booking_id: parseInt(id) }),
         type: type,
       },
     });
